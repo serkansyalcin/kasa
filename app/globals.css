@@ -1,26 +1,49 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --forest: #045131;
+  --olive: #537528;
+  --apple: #8bbc15;
+  --lime: #a2dc18;
+  --cream: #fff6e5;
+  --surface: #ffffff;
+  --muted: #6b7c63;
+  --muted-light: #e8ebe3;
+  --border: #d4dbc8;
+  --danger: #b42318;
+  --danger-soft: #fef3f2;
+  --background: var(--cream);
+  --foreground: var(--forest);
 }
 
 @theme inline {
+  --color-forest: var(--forest);
+  --color-olive: var(--olive);
+  --color-apple: var(--apple);
+  --color-lime: var(--lime);
+  --color-cream: var(--cream);
+  --color-surface: var(--surface);
+  --color-muted: var(--muted);
+  --color-muted-light: var(--muted-light);
+  --color-border: var(--border);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-dm-sans);
+  --font-display: var(--font-fraunces);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-fraunces), Georgia, serif;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
