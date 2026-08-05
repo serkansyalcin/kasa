@@ -63,7 +63,7 @@ export function ExportMenu({
           <button
             type="button"
             role="menuitem"
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-forest hover:bg-cream"
+            className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-sm text-forest hover:bg-cream"
             onClick={() => {
               setOpen(false);
               onExportCsv();
@@ -75,7 +75,7 @@ export function ExportMenu({
           <button
             type="button"
             role="menuitem"
-            className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-forest hover:bg-cream"
+            className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-sm text-forest hover:bg-cream"
             onClick={() => {
               setOpen(false);
               onExportPdf();

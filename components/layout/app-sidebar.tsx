@@ -79,7 +79,7 @@ export function AppSidebar({ open = false, onClose }: AppSidebarProps) {
                 href={item.href}
                 onClick={onClose}
                 className={cn(
-                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                  "flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                   active
                     ? "bg-apple text-forest"
                     : "text-cream/85 hover:bg-olive/50 hover:text-cream",

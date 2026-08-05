@@ -33,7 +33,7 @@ export function Tabs({ items, value, onChange, className }: TabsProps) {
             aria-selected={active}
             onClick={() => onChange(item.id)}
             className={cn(
-              "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+              "cursor-pointer rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
               active
                 ? "bg-surface text-forest shadow-sm"
                 : "text-muted hover:text-forest",

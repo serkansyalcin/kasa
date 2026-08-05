@@ -40,6 +40,29 @@ body {
   font-family: var(--font-dm-sans), system-ui, sans-serif;
 }
 
+/* Tıklanabilir kontroller */
+button,
+a,
+[role="button"],
+[role="tab"],
+[role="menuitem"],
+[role="link"],
+summary,
+label[for],
+select,
+input[type="checkbox"],
+input[type="radio"],
+input[type="file"] {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"],
+select:disabled,
+input:disabled {
+  cursor: not-allowed;
+}
+
 .font-display {
   font-family: var(--font-fraunces), Georgia, serif;
 }

@@ -333,7 +333,7 @@ export function DataTable<T>({
                             type="button"
                             onClick={() => toggleSort(col.id)}
                             className={cn(
-                              "inline-flex items-center gap-1.5 rounded-lg transition-colors hover:text-forest",
+                              "inline-flex cursor-pointer items-center gap-1.5 rounded-lg transition-colors hover:text-forest",
                               active ? "text-forest" : "text-muted",
                             )}
                           >
