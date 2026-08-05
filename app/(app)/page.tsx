@@ -1,6 +1,7 @@
 "use client";
 
 import { CashSessionCard } from "@/components/domain/cash-session-card";
+import { GoalProgress } from "@/components/domain/goal-progress";
 import { StatCard } from "@/components/domain/stat-card";
 import { TransactionForm } from "@/components/domain/transaction-form";
 import { PageHeader } from "@/components/layout/page-header";
@@ -13,19 +14,27 @@ import { Modal } from "@/components/ui/modal";
 import { useAppStore } from "@/lib/store/app-store";
 import { useFeedback } from "@/lib/store/feedback-store";
 import type { Transaction, TransactionType } from "@/lib/types";
-import { formatDate, formatMoney } from "@/lib/utils/format";
+import { formatDate, formatMoney, todayISO } from "@/lib/utils/format";
 import { paymentMethodLabels } from "@/lib/utils/labels";
 import {
   expectedCashBalance,
+  goalSnapshot,
+  monthTransactions,
+  monthlyPaceExpected,
   paymentBreakdown,
   sumByType,
   todayTransactions,
+  weekTransactions,
+  yesterdayTransactions,
 } from "@/lib/utils/stats";
 import {
   ArrowDownRight,
   ArrowUpRight,
+  CalendarDays,
   Plus,
   Scale,
+  Target,
+  Trophy,
   Wallet,
 } from "lucide-react";
 import Link from "next/link";
@@ -36,6 +45,7 @@ export default function DashboardPage() {
     transactions,
     categories,
     openSession,
+    business,
     addTransaction,
   } = useAppStore();
   const { notify } = useFeedback();
@@ -46,11 +56,33 @@ export default function DashboardPage() {
     () => todayTransactions(transactions),
     [transactions],
   );
+  const yesterdayTx = useMemo(
+    () => yesterdayTransactions(transactions),
+    [transactions],
+  );
+  const weekTx = useMemo(() => weekTransactions(transactions), [transactions]);
+  const monthTx = useMemo(
+    () => monthTransactions(transactions),
+    [transactions],
+  );
+
   const income = sumByType(todayTx, "income");
   const expense = sumByType(todayTx, "expense");
   const net = income - expense;
+  const yesterdayIncome = sumByType(yesterdayTx, "income");
+  const weekIncome = sumByType(weekTx, "income");
+  const monthIncome = sumByType(monthTx, "income");
+  const incomeDelta = income - yesterdayIncome;
+
   const expected = expectedCashBalance(openSession, transactions);
   const payments = useMemo(() => paymentBreakdown(todayTx), [todayTx]);
+
+  const dailyGoal = goalSnapshot(income, business.dailyIncomeTarget);
+  const weeklyGoal = goalSnapshot(weekIncome, business.weeklyIncomeTarget);
+  const monthlyGoal = goalSnapshot(monthIncome, business.monthlyIncomeTarget);
+  const paceExpected = monthlyPaceExpected(business.monthlyIncomeTarget);
+  const aheadOfPace =
+    business.monthlyIncomeTarget > 0 && monthIncome >= paceExpected;
 
   const recent = useMemo(
     () =>
@@ -141,21 +173,37 @@ export default function DashboardPage() {
         }
       />
 
-      {!openSession ? (
-        <Alert variant="warning" title="Kasa kapalı" className="mb-4">
-          Bugünkü nakit sayımı için önce kasayı açın.{" "}
-          <Link href="/kasa" className="font-medium underline">
-            Kasaya git
-          </Link>
-        </Alert>
-      ) : null}
+      <div className="mb-4 space-y-3">
+        {!openSession ? (
+          <Alert variant="warning" title="Kasa kapalı">
+            Bugünkü nakit sayımı için önce kasayı açın.{" "}
+            <Link href="/kasa" className="font-medium underline">
+              Kasaya git
+            </Link>
+          </Alert>
+        ) : null}
+        {dailyGoal.reached ? (
+          <Alert variant="success" title="Günlük hedef tamamlandı">
+            Tebrikler — bugünkü gelir hedefinin üzerine çıktınız.
+          </Alert>
+        ) : dailyGoal.target > 0 && dailyGoal.percent >= 80 ? (
+          <Alert variant="info" title="Hedefe yaklaştınız">
+            Günlük hedefe {formatMoney(dailyGoal.remaining)} kaldı.
+          </Alert>
+        ) : null}
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Bugünkü gelir"
           value={formatMoney(income)}
+          hint={
+            yesterdayIncome > 0 || income > 0
+              ? `Düne göre ${incomeDelta >= 0 ? "+" : ""}${formatMoney(incomeDelta)}`
+              : "Dün veri yok"
+          }
           icon={<ArrowUpRight className="h-5 w-5" />}
-          trend="up"
+          trend={incomeDelta >= 0 ? "up" : "down"}
         />
         <StatCard
           label="Bugünkü gider"
@@ -178,6 +226,46 @@ export default function DashboardPage() {
               : "Kasa sayfasından açın"
           }
           icon={<Wallet className="h-5 w-5" />}
+        />
+      </div>
+
+      <div className="mt-6 grid gap-4 md:grid-cols-3">
+        <GoalProgress
+          label="Günlük gelir hedefi"
+          current={dailyGoal.current}
+          target={dailyGoal.target}
+          hint={
+            dailyGoal.reached
+              ? "Harika gidiş"
+              : dailyGoal.target > 0
+                ? `Kalan ${formatMoney(dailyGoal.remaining)}`
+                : undefined
+          }
+          icon={<Target className="h-5 w-5" />}
+        />
+        <GoalProgress
+          label="Haftalık gelir hedefi"
+          current={weeklyGoal.current}
+          target={weeklyGoal.target}
+          hint={
+            weeklyGoal.target > 0
+              ? `Kalan ${formatMoney(weeklyGoal.remaining)}`
+              : undefined
+          }
+          icon={<CalendarDays className="h-5 w-5" />}
+        />
+        <GoalProgress
+          label="Aylık gelir hedefi"
+          current={monthlyGoal.current}
+          target={monthlyGoal.target}
+          hint={
+            monthlyGoal.target > 0
+              ? aheadOfPace
+                ? `Tempo üstü · beklenen ${formatMoney(paceExpected)}`
+                : `Tempo altı · beklenen ${formatMoney(paceExpected)}`
+              : undefined
+          }
+          icon={<Trophy className="h-5 w-5" />}
         />
       </div>
 
@@ -264,11 +352,28 @@ export default function DashboardPage() {
           onCancel={() => setModalOpen(false)}
           onSubmit={(values) => {
             addTransaction(values);
+            const isTodayIncome =
+              values.type === "income" && values.date === todayISO();
+            const nextIncome = isTodayIncome
+              ? income + values.amount
+              : income;
+            const hitGoal =
+              isTodayIncome &&
+              business.dailyIncomeTarget > 0 &&
+              income < business.dailyIncomeTarget &&
+              nextIncome >= business.dailyIncomeTarget;
+
             notify({
-              title:
-                values.type === "income" ? "Gelir eklendi" : "Gider eklendi",
+              title: hitGoal
+                ? "Günlük hedefe ulaşıldı!"
+                : values.type === "income"
+                  ? "Gelir eklendi"
+                  : "Gider eklendi",
+              description: hitGoal
+                ? "Tebrikler, bugünkü gelir hedefini tamamladınız."
+                : undefined,
               status: "success",
-              variant: "toast",
+              variant: hitGoal ? "modal" : "toast",
             });
             setModalOpen(false);
           }}

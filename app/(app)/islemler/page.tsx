@@ -13,8 +13,9 @@ import { Select } from "@/components/ui/select";
 import { useAppStore } from "@/lib/store/app-store";
 import { useFeedback } from "@/lib/store/feedback-store";
 import type { PaymentMethod, Transaction, TransactionType } from "@/lib/types";
-import { formatDate, formatMoney } from "@/lib/utils/format";
+import { formatDate, formatMoney, todayISO } from "@/lib/utils/format";
 import { paymentMethodLabel, paymentMethodLabels } from "@/lib/utils/labels";
+import { sumByType, todayTransactions } from "@/lib/utils/stats";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -22,6 +23,7 @@ export default function TransactionsPage() {
   const {
     transactions,
     categories,
+    business,
     addTransaction,
     updateTransaction,
     deleteTransaction,
@@ -310,11 +312,25 @@ export default function TransactionsPage() {
                 variant: "toast",
               });
             } else {
+              const todayIncome = sumByType(
+                todayTransactions(transactions),
+                "income",
+              );
               addTransaction(values);
+              const isTodayIncome =
+                values.type === "income" && values.date === todayISO();
+              const hitGoal =
+                isTodayIncome &&
+                business.dailyIncomeTarget > 0 &&
+                todayIncome < business.dailyIncomeTarget &&
+                todayIncome + values.amount >= business.dailyIncomeTarget;
               notify({
-                title: "İşlem eklendi",
+                title: hitGoal ? "Günlük hedefe ulaşıldı!" : "İşlem eklendi",
+                description: hitGoal
+                  ? "Tebrikler, bugünkü gelir hedefini tamamladınız."
+                  : undefined,
                 status: "success",
-                variant: "toast",
+                variant: hitGoal ? "modal" : "toast",
               });
             }
             setModalOpen(false);

@@ -9,12 +9,18 @@ export {
 export {
   expectedCashBalance,
   filterByDateRange,
+  goalSnapshot,
+  monthTransactions,
+  monthlyPaceExpected,
+  offsetDateISO,
   paymentBreakdown,
   startOfMonthISO,
   startOfWeekISO,
   sumByPayment,
   sumByType,
   todayTransactions,
+  weekTransactions,
+  yesterdayTransactions,
 } from "./stats";
 export { paymentMethodLabel, paymentMethodLabels } from "./labels";
 export {

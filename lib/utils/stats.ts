@@ -76,6 +76,68 @@ export function startOfMonthISO(): string {
   return toISO(d);
 }
 
+export function offsetDateISO(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return toISO(d);
+}
+
+export function yesterdayTransactions(
+  transactions: Transaction[],
+): Transaction[] {
+  const day = offsetDateISO(-1);
+  return transactions.filter((t) => t.date === day);
+}
+
+export function monthTransactions(transactions: Transaction[]): Transaction[] {
+  const from = startOfMonthISO();
+  const to = todayISO();
+  return filterByDateRange(transactions, from, to);
+}
+
+export function weekTransactions(transactions: Transaction[]): Transaction[] {
+  const from = startOfWeekISO();
+  const to = todayISO();
+  return filterByDateRange(transactions, from, to);
+}
+
+export type GoalSnapshot = {
+  current: number;
+  target: number;
+  remaining: number;
+  percent: number;
+  reached: boolean;
+  /** Aylık hedef için: takvim temposuna göre olması gereken tutar */
+  paceExpected?: number;
+  aheadOfPace?: boolean;
+};
+
+export function goalSnapshot(current: number, target: number): GoalSnapshot {
+  const safeTarget = Math.max(0, target);
+  const percent =
+    safeTarget > 0 ? Math.round((current / safeTarget) * 100) : 0;
+  return {
+    current,
+    target: safeTarget,
+    remaining: Math.max(safeTarget - current, 0),
+    percent,
+    reached: safeTarget > 0 && current >= safeTarget,
+  };
+}
+
+/** Ayın bugüne kadarki beklenen tempo tutarı */
+export function monthlyPaceExpected(monthlyTarget: number): number {
+  if (monthlyTarget <= 0) return 0;
+  const now = new Date();
+  const day = now.getDate();
+  const daysInMonth = new Date(
+    now.getFullYear(),
+    now.getMonth() + 1,
+    0,
+  ).getDate();
+  return (monthlyTarget / daysInMonth) * day;
+}
+
 function toISO(d: Date): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");

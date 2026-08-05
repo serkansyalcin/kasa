@@ -112,6 +112,12 @@ function migrateData(raw: AppData): AppData {
       defaultOpeningBalance:
         raw.business?.defaultOpeningBalance ??
         businessInfo.defaultOpeningBalance,
+      dailyIncomeTarget:
+        raw.business?.dailyIncomeTarget ?? businessInfo.dailyIncomeTarget,
+      weeklyIncomeTarget:
+        raw.business?.weeklyIncomeTarget ?? businessInfo.weeklyIncomeTarget,
+      monthlyIncomeTarget:
+        raw.business?.monthlyIncomeTarget ?? businessInfo.monthlyIncomeTarget,
     },
     transactions: (raw.transactions ?? []).map((t) => ({
       ...t,

@@ -1,5 +1,6 @@
 "use client";
 
+import { GoalProgress } from "@/components/domain/goal-progress";
 import { StatCard } from "@/components/domain/stat-card";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,18 +10,27 @@ import { formatMoney, todayISO } from "@/lib/utils/format";
 import { paymentMethodLabels } from "@/lib/utils/labels";
 import {
   filterByDateRange,
+  goalSnapshot,
+  monthlyPaceExpected,
   paymentBreakdown,
   startOfMonthISO,
   startOfWeekISO,
   sumByType,
 } from "@/lib/utils/stats";
-import { ArrowDownRight, ArrowUpRight, Scale } from "lucide-react";
+import {
+  ArrowDownRight,
+  ArrowUpRight,
+  CalendarDays,
+  Scale,
+  Target,
+  Trophy,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 
 type Period = "day" | "week" | "month";
 
 export default function ReportsPage() {
-  const { transactions, categories } = useAppStore();
+  const { transactions, categories, business } = useAppStore();
   const [period, setPeriod] = useState<Period>("day");
 
   const range = useMemo(() => {
@@ -39,6 +49,15 @@ export default function ReportsPage() {
   const expense = sumByType(filtered, "expense");
   const net = income - expense;
   const payments = useMemo(() => paymentBreakdown(filtered), [filtered]);
+
+  const periodTarget =
+    period === "day"
+      ? business.dailyIncomeTarget
+      : period === "week"
+        ? business.weeklyIncomeTarget
+        : business.monthlyIncomeTarget;
+  const periodGoal = goalSnapshot(income, periodTarget);
+  const paceExpected = monthlyPaceExpected(business.monthlyIncomeTarget);
 
   const byCategory = useMemo(() => {
     const map = new Map<string, number>();
@@ -120,6 +139,30 @@ export default function ReportsPage() {
           value={formatMoney(net)}
           icon={<Scale className="h-5 w-5" />}
           trend={net >= 0 ? "up" : "down"}
+        />
+      </div>
+
+      <div className="mt-6">
+        <GoalProgress
+          label={`${periodLabel} gelir hedefi`}
+          current={periodGoal.current}
+          target={periodGoal.target}
+          hint={
+            period === "month" && periodGoal.target > 0
+              ? `Tempo beklenen: ${formatMoney(paceExpected)}`
+              : periodGoal.target > 0
+                ? `Kalan ${formatMoney(periodGoal.remaining)}`
+                : "Hedefi Ayarlar’dan tanımlayın"
+          }
+          icon={
+            period === "day" ? (
+              <Target className="h-5 w-5" />
+            ) : period === "week" ? (
+              <CalendarDays className="h-5 w-5" />
+            ) : (
+              <Trophy className="h-5 w-5" />
+            )
+          }
         />
       </div>
 

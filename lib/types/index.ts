@@ -38,4 +38,10 @@ export type BusinessInfo = {
   name: string;
   email: string;
   defaultOpeningBalance: number;
+  /** Günlük gelir hedefi (₺) */
+  dailyIncomeTarget: number;
+  /** Haftalık gelir hedefi (₺) */
+  weeklyIncomeTarget: number;
+  /** Aylık gelir hedefi (₺) */
+  monthlyIncomeTarget: number;
 };

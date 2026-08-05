@@ -7,6 +7,9 @@ export const businessInfo: BusinessInfo = {
   name: "Yeşil Bahçe Cafe",
   email: "demo@kasatakip.com",
   defaultOpeningBalance: 1500,
+  dailyIncomeTarget: 5000,
+  weeklyIncomeTarget: 30000,
+  monthlyIncomeTarget: 120000,
 };
 
 export const seedCategories: Category[] = [
