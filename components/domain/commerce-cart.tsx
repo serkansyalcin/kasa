@@ -10,6 +10,7 @@ import { docTotal, lineTotal } from "@/lib/types";
 import { formatMoney, todayISO, uid } from "@/lib/utils/format";
 import { paymentMethodLabels } from "@/lib/utils/labels";
 import { Minus, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 export type CartLine = DocLine;
@@ -43,11 +44,13 @@ export function CommerceCart({
   const [error, setError] = useState("");
 
   const catalog = useMemo(() => {
-    return products.filter((p) => {
-      if (!p.active) return false;
-      if (mode === "sale") return p.kind === "sell" || p.kind === "both";
-      return p.kind === "buy" || p.kind === "both";
-    });
+    return products
+      .filter((p) => {
+        if (!p.active) return false;
+        if (mode === "sale") return p.kind === "sell" || p.kind === "both";
+        return p.kind === "buy" || p.kind === "both";
+      })
+      .sort((a, b) => a.name.localeCompare(b.name, "tr"));
   }, [products, mode]);
 
   const total = docTotal(lines);
@@ -112,13 +115,37 @@ export function CommerceCart({
   return (
     <div className="grid gap-4 lg:grid-cols-5">
       <div className="lg:col-span-3">
-        <p className="mb-3 text-sm font-medium text-forest">
-          {mode === "sale" ? "Satış ürünleri" : "Alış kalemleri"}
-        </p>
-        {catalog.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted">
-            Uygun ürün yok. Ürünler sayfasından ekleyin.
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <p className="text-sm font-medium text-forest">
+            {mode === "sale" ? "Satış ürünleri" : "Alış kalemleri"}
+            <span className="ml-2 font-normal text-muted">
+              ({catalog.length})
+            </span>
           </p>
+          <Link
+            href="/urunler"
+            className="text-sm font-medium text-olive hover:text-forest"
+          >
+            Katalogu yönet
+          </Link>
+        </div>
+        {catalog.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border px-4 py-10 text-center">
+            <p className="text-sm text-muted">
+              {mode === "sale"
+                ? "Satış için aktif ürün yok."
+                : "Alış için aktif ürün yok."}
+            </p>
+            <p className="mt-1 text-xs text-muted">
+              Ürünler sayfasından ekleyin; burada anında görünür.
+            </p>
+            <Link
+              href="/urunler"
+              className="mt-4 inline-flex h-8 items-center rounded-xl bg-apple px-3 text-sm font-medium text-forest hover:bg-lime"
+            >
+              Ürün ekle
+            </Link>
+          </div>
         ) : (
           <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
             {catalog.map((p) => {

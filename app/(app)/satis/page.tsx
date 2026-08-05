@@ -113,13 +113,13 @@ export default function SalesPage() {
     <div>
       <PageHeader
         title="Satış"
-        description="Ürün seçip hızlı satış yapın — kasa işlemi otomatik oluşur"
+        description="Ürünler kataloğundan seçin — kasa işlemi otomatik oluşur"
         actions={
           <Link
             href="/urunler"
-            className="inline-flex h-8 items-center rounded-xl px-3 text-sm font-medium text-olive hover:text-forest"
+            className="inline-flex h-8 items-center rounded-xl border border-border bg-surface px-3 text-sm font-medium text-olive hover:border-apple hover:text-forest"
           >
-            Ürünleri yönet
+            Ürünler
           </Link>
         }
       />

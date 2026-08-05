@@ -3,17 +3,26 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmDialog, Modal } from "@/components/ui/modal";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { Tabs } from "@/components/ui/tabs";
 import { useAppStore } from "@/lib/store/app-store";
 import { useFeedback } from "@/lib/store/feedback-store";
 import type { Product, ProductKind } from "@/lib/types";
 import { formatMoney } from "@/lib/utils/format";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  Package,
+  PackagePlus,
+  Pencil,
+  Plus,
+  ShoppingBag,
+  Trash2,
+} from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState, type FormEvent } from "react";
 
 const kindLabels: Record<ProductKind, string> = {
@@ -22,10 +31,13 @@ const kindLabels: Record<ProductKind, string> = {
   both: "Alış + Satış",
 };
 
+type FilterId = "all" | "sell" | "buy" | "inactive";
+
 export default function ProductsPage() {
   const { products, addProduct, updateProduct, deleteProduct } = useAppStore();
   const { notify } = useFeedback();
 
+  const [filter, setFilter] = useState<FilterId>("all");
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Product | null>(null);
   const [deleting, setDeleting] = useState<Product | null>(null);
@@ -33,19 +45,53 @@ export default function ProductsPage() {
   const [sellPrice, setSellPrice] = useState("0");
   const [buyPrice, setBuyPrice] = useState("0");
   const [kind, setKind] = useState<ProductKind>("sell");
+  const [active, setActive] = useState(true);
   const [error, setError] = useState("");
+
+  const counts = useMemo(() => {
+    const activeList = products.filter((p) => p.active);
+    return {
+      all: products.length,
+      sell: activeList.filter((p) => p.kind === "sell" || p.kind === "both")
+        .length,
+      buy: activeList.filter((p) => p.kind === "buy" || p.kind === "both")
+        .length,
+      inactive: products.filter((p) => !p.active).length,
+    };
+  }, [products]);
+
+  const filtered = useMemo(() => {
+    const list = products.filter((p) => {
+      if (filter === "inactive") return !p.active;
+      if (!p.active) return false;
+      if (filter === "sell") return p.kind === "sell" || p.kind === "both";
+      if (filter === "buy") return p.kind === "buy" || p.kind === "both";
+      return true;
+    });
+    return [...list].sort((a, b) => a.name.localeCompare(b.name, "tr"));
+  }, [products, filter]);
 
   const columns: Column<Product>[] = useMemo(
     () => [
       {
         id: "name",
         header: "Ürün",
-        cell: (row) => <span className="font-medium">{row.name}</span>,
+        cell: (row) => (
+          <div>
+            <span className="font-medium text-forest">{row.name}</span>
+            {!row.active ? (
+              <Badge variant="closed" className="ml-2">
+                Pasif
+              </Badge>
+            ) : null}
+          </div>
+        ),
         exportValue: (row) => row.name,
+        sortValue: (row) => row.name,
       },
       {
         id: "kind",
-        header: "Tür",
+        header: "Kullanım",
         cell: (row) => <Badge variant="neutral">{kindLabels[row.kind]}</Badge>,
         exportValue: (row) => kindLabels[row.kind],
       },
@@ -113,6 +159,7 @@ export default function ProductsPage() {
     setSellPrice("90");
     setBuyPrice("0");
     setKind("sell");
+    setActive(true);
     setError("");
     setModalOpen(true);
   }
@@ -123,6 +170,7 @@ export default function ProductsPage() {
     setSellPrice(String(product.sellPrice));
     setBuyPrice(String(product.buyPrice));
     setKind(product.kind);
+    setActive(product.active);
     setError("");
     setModalOpen(true);
   }
@@ -150,10 +198,10 @@ export default function ProductsPage() {
 
     const payload = {
       name: name.trim(),
-      sellPrice: sell,
-      buyPrice: buy,
+      sellPrice: kind === "buy" ? 0 : sell,
+      buyPrice: kind === "sell" ? 0 : buy,
       kind,
-      active: true,
+      active,
     };
 
     if (editing) {
@@ -161,7 +209,12 @@ export default function ProductsPage() {
       notify({ title: "Ürün güncellendi", status: "success", variant: "toast" });
     } else {
       addProduct(payload);
-      notify({ title: "Ürün eklendi", status: "success", variant: "toast" });
+      notify({
+        title: "Ürün eklendi",
+        description: "Satış ve alış sayfalarında anında görünür.",
+        status: "success",
+        variant: "toast",
+      });
     }
     setModalOpen(false);
   }
@@ -170,7 +223,7 @@ export default function ProductsPage() {
     <div>
       <PageHeader
         title="Ürünler"
-        description="Satış ve alışta kullanılacak ürün / menü kalemleri"
+        description="Tek katalog — burada eklediğiniz kalemler Satış ve Alış’ta otomatik listelenir"
         actions={
           <Button
             size="sm"
@@ -182,19 +235,92 @@ export default function ProductsPage() {
         }
       />
 
+      <div className="mb-5 grid gap-3 sm:grid-cols-3">
+        <Card>
+          <CardContent className="flex items-center gap-3 pt-5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-lime/30 text-forest">
+              <Package className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-xs text-muted">Toplam ürün</p>
+              <p className="text-xl font-semibold tabular-nums text-forest">
+                {counts.all}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center justify-between gap-3 pt-5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-apple/25 text-forest">
+                <ShoppingBag className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs text-muted">Satışta</p>
+                <p className="text-xl font-semibold tabular-nums text-forest">
+                  {counts.sell}
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/satis"
+              className="text-sm font-medium text-olive hover:text-forest"
+            >
+              Satışa git
+            </Link>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="flex items-center justify-between gap-3 pt-5">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted-light text-olive">
+                <PackagePlus className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs text-muted">Alışta</p>
+                <p className="text-xl font-semibold tabular-nums text-forest">
+                  {counts.buy}
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/alis"
+              className="text-sm font-medium text-olive hover:text-forest"
+            >
+              Alışa git
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+
       <Card>
-        <CardContent className="pt-5">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle>Katalog</CardTitle>
+          <Tabs
+            value={filter}
+            onChange={(id) => setFilter(id as FilterId)}
+            items={[
+              { id: "all", label: `Tümü (${counts.all - counts.inactive})` },
+              { id: "sell", label: `Satış (${counts.sell})` },
+              { id: "buy", label: `Alış (${counts.buy})` },
+              ...(counts.inactive > 0
+                ? [{ id: "inactive", label: `Pasif (${counts.inactive})` }]
+                : []),
+            ]}
+          />
+        </CardHeader>
+        <CardContent className="pt-2">
           <DataTable
             columns={columns}
-            data={products}
+            data={filtered}
             keyExtractor={(r) => r.id}
             toolbar={{
               title: "Ürünler",
               filename: "urunler",
               searchPlaceholder: "Ürün ara...",
             }}
-            emptyTitle="Ürün yok"
-            emptyDescription="Satış ve alış için ürün ekleyin."
+            emptyTitle="Bu listede ürün yok"
+            emptyDescription="Ürün ekleyin; Satış ve Alış sayfalarına otomatik düşer."
             emptyAction={
               <Button size="sm" onClick={openCreate}>
                 Ürün ekle
@@ -215,6 +341,7 @@ export default function ProductsPage() {
               id="prd-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              placeholder="Örn. Latte, Süt (L)"
               required
             />
           </FormField>
@@ -224,9 +351,9 @@ export default function ProductsPage() {
               value={kind}
               onChange={(e) => setKind(e.target.value as ProductKind)}
             >
-              <option value="sell">Sadece satış</option>
-              <option value="buy">Sadece alış</option>
-              <option value="both">Alış ve satış</option>
+              <option value="sell">Sadece satış (menü)</option>
+              <option value="buy">Sadece alış (tedarik)</option>
+              <option value="both">Hem alış hem satış</option>
             </Select>
           </FormField>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -253,6 +380,16 @@ export default function ProductsPage() {
               />
             </FormField>
           </div>
+          <FormField label="Durum" htmlFor="prd-active">
+            <Select
+              id="prd-active"
+              value={active ? "active" : "inactive"}
+              onChange={(e) => setActive(e.target.value === "active")}
+            >
+              <option value="active">Aktif — listelerde görünür</option>
+              <option value="inactive">Pasif — Satış/Alış’ta gizlenir</option>
+            </Select>
+          </FormField>
           <div className="flex justify-end gap-2">
             <Button
               type="button"
@@ -270,7 +407,7 @@ export default function ProductsPage() {
         open={Boolean(deleting)}
         onClose={() => setDeleting(null)}
         title="Ürünü sil"
-        description={`“${deleting?.name}” silinecek.`}
+        description={`“${deleting?.name}” katalogdan silinecek. Geçmiş satış/alış kayıtları etkilenmez.`}
         confirmLabel="Sil"
         danger
         onConfirm={() => {

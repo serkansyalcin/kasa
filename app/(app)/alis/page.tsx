@@ -109,13 +109,13 @@ export default function PurchasesPage() {
     <div>
       <PageHeader
         title="Alış"
-        description="Tedarik alışlarını kaydedin — gider işlemi otomatik oluşur"
+        description="Ürünler kataloğundan tedarik kalemi seçin — gider otomatik oluşur"
         actions={
           <Link
             href="/urunler"
-            className="inline-flex h-8 items-center rounded-xl px-3 text-sm font-medium text-olive hover:text-forest"
+            className="inline-flex h-8 items-center rounded-xl border border-border bg-surface px-3 text-sm font-medium text-olive hover:border-apple hover:text-forest"
           >
-            Ürünleri yönet
+            Ürünler
           </Link>
         }
       />
