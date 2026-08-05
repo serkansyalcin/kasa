@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { Textarea } from "@/components/ui/textarea";
 import { useAppStore } from "@/lib/store/app-store";
+import { useFeedback } from "@/lib/store/feedback-store";
 import type { CashSession } from "@/lib/types";
 import { formatDateTime, formatMoney } from "@/lib/utils/format";
 import { expectedCashBalance } from "@/lib/utils/stats";
@@ -25,6 +26,7 @@ export default function CashPage() {
     openCash,
     closeCash,
   } = useAppStore();
+  const { notify } = useFeedback();
 
   const [openModal, setOpenModal] = useState(false);
   const [closeModal, setCloseModal] = useState(false);
@@ -107,6 +109,12 @@ export default function CashPage() {
       return;
     }
     openCash(value, openNote.trim() || undefined);
+    notify({
+      title: "Kasa açıldı",
+      description: "Günlük oturum başlatıldı.",
+      status: "success",
+      variant: "toast",
+    });
     setOpenModal(false);
     setError("");
     setOpenNote("");
@@ -120,6 +128,12 @@ export default function CashPage() {
       return;
     }
     closeCash(value, closeNote.trim() || undefined);
+    notify({
+      title: "Kasa kapatıldı",
+      description: "Oturum başarıyla sonlandırıldı.",
+      status: "success",
+      variant: "modal",
+    });
     setCloseModal(false);
     setError("");
     setCounted("");

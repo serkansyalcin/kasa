@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Tabs } from "@/components/ui/tabs";
 import { useAppStore } from "@/lib/store/app-store";
+import { useFeedback } from "@/lib/store/feedback-store";
 import type { Category, TransactionType } from "@/lib/types";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState, type FormEvent } from "react";
@@ -23,6 +24,7 @@ export default function CategoriesPage() {
     updateCategory,
     deleteCategory,
   } = useAppStore();
+  const { notify } = useFeedback();
 
   const [tab, setTab] = useState<"all" | TransactionType>("all");
   const [modalOpen, setModalOpen] = useState(false);
@@ -123,8 +125,21 @@ export default function CategoriesPage() {
       setError("Kategori adı gerekli.");
       return;
     }
-    if (editing) updateCategory(editing.id, { name: name.trim(), type });
-    else addCategory({ name: name.trim(), type });
+    if (editing) {
+      updateCategory(editing.id, { name: name.trim(), type });
+      notify({
+        title: "Kategori güncellendi",
+        status: "success",
+        variant: "toast",
+      });
+    } else {
+      addCategory({ name: name.trim(), type });
+      notify({
+        title: "Kategori eklendi",
+        status: "success",
+        variant: "toast",
+      });
+    }
     setModalOpen(false);
     setEditing(null);
   }
@@ -219,7 +234,14 @@ export default function CategoriesPage() {
         confirmLabel="Sil"
         danger
         onConfirm={() => {
-          if (deleting) deleteCategory(deleting.id);
+          if (!deleting) return;
+          deleteCategory(deleting.id);
+          notify({
+            title: "Kategori silindi",
+            description: `"${deleting.name}" kaldırıldı.`,
+            status: "success",
+            variant: "modal",
+          });
         }}
       />
     </div>

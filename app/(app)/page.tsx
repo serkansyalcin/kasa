@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Modal } from "@/components/ui/modal";
 import { useAppStore } from "@/lib/store/app-store";
+import { useFeedback } from "@/lib/store/feedback-store";
 import type { Transaction, TransactionType } from "@/lib/types";
 import { formatDate, formatMoney } from "@/lib/utils/format";
 import {
@@ -34,6 +35,7 @@ export default function DashboardPage() {
     openSession,
     addTransaction,
   } = useAppStore();
+  const { notify } = useFeedback();
   const [modalOpen, setModalOpen] = useState(false);
   const [defaultType, setDefaultType] = useState<TransactionType>("income");
 
@@ -225,6 +227,12 @@ export default function DashboardPage() {
           onCancel={() => setModalOpen(false)}
           onSubmit={(values) => {
             addTransaction(values);
+            notify({
+              title:
+                values.type === "income" ? "Gelir eklendi" : "Gider eklendi",
+              status: "success",
+              variant: "toast",
+            });
             setModalOpen(false);
           }}
         />

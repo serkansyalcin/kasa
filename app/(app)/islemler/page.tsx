@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { ConfirmDialog, Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import { useAppStore } from "@/lib/store/app-store";
+import { useFeedback } from "@/lib/store/feedback-store";
 import type { Transaction, TransactionType } from "@/lib/types";
 import { formatDate, formatMoney } from "@/lib/utils/format";
 import { Pencil, Plus, Trash2 } from "lucide-react";
@@ -24,6 +25,7 @@ export default function TransactionsPage() {
     updateTransaction,
     deleteTransaction,
   } = useAppStore();
+  const { notify } = useFeedback();
 
   const [typeFilter, setTypeFilter] = useState<"all" | TransactionType>("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -248,8 +250,21 @@ export default function TransactionsPage() {
             setEditing(null);
           }}
           onSubmit={(values) => {
-            if (editing) updateTransaction(editing.id, values);
-            else addTransaction(values);
+            if (editing) {
+              updateTransaction(editing.id, values);
+              notify({
+                title: "İşlem güncellendi",
+                status: "success",
+                variant: "toast",
+              });
+            } else {
+              addTransaction(values);
+              notify({
+                title: "İşlem eklendi",
+                status: "success",
+                variant: "toast",
+              });
+            }
             setModalOpen(false);
             setEditing(null);
           }}
@@ -264,7 +279,14 @@ export default function TransactionsPage() {
         confirmLabel="Sil"
         danger
         onConfirm={() => {
-          if (deleting) deleteTransaction(deleting.id);
+          if (!deleting) return;
+          deleteTransaction(deleting.id);
+          notify({
+            title: "İşlem silindi",
+            description: "Kayıt başarıyla kaldırıldı.",
+            status: "success",
+            variant: "modal",
+          });
         }}
       />
     </div>

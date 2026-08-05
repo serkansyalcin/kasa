@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { DM_Sans, Fraunces } from "next/font/google";
+import { FeedbackHost } from "@/components/ui/feedback";
 import { AppProvider } from "@/lib/store/app-store";
+import { FeedbackProvider } from "@/lib/store/feedback-store";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -26,7 +28,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       suppressHydrationWarning
     >
       <body className="min-h-full font-sans" suppressHydrationWarning>
-        <AppProvider>{children}</AppProvider>
+        <AppProvider>
+          <FeedbackProvider>
+            {children}
+            <FeedbackHost />
+          </FeedbackProvider>
+        </AppProvider>
       </body>
     </html>
   );
