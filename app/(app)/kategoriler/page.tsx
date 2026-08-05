@@ -179,7 +179,7 @@ export default function CategoriesPage() {
       </div>
 
       <Card>
-        <CardContent className="pt-2">
+        <CardContent className="pt-5">
           <DataTable
             columns={columns}
             data={filtered}

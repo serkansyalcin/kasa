@@ -10,6 +10,7 @@ export const businessInfo: BusinessInfo = {
   dailyIncomeTarget: 5000,
   weeklyIncomeTarget: 30000,
   monthlyIncomeTarget: 120000,
+  yearlyIncomeTarget: 1400000,
 };
 
 export const seedCategories: Category[] = [

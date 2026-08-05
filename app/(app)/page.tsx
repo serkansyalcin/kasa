@@ -19,9 +19,11 @@ import { paymentMethodLabels } from "@/lib/utils/labels";
 import {
   expectedCashBalance,
   goalSnapshot,
+  filterByDateRange,
   monthTransactions,
   monthlyPaceExpected,
   paymentBreakdown,
+  startOfYearISO,
   sumByType,
   todayTransactions,
   weekTransactions,
@@ -65,6 +67,10 @@ export default function DashboardPage() {
     () => monthTransactions(transactions),
     [transactions],
   );
+  const yearTx = useMemo(
+    () => filterByDateRange(transactions, startOfYearISO(), todayISO()),
+    [transactions],
+  );
 
   const income = sumByType(todayTx, "income");
   const expense = sumByType(todayTx, "expense");
@@ -72,6 +78,7 @@ export default function DashboardPage() {
   const yesterdayIncome = sumByType(yesterdayTx, "income");
   const weekIncome = sumByType(weekTx, "income");
   const monthIncome = sumByType(monthTx, "income");
+  const yearIncome = sumByType(yearTx, "income");
   const incomeDelta = income - yesterdayIncome;
 
   const expected = expectedCashBalance(openSession, transactions);
@@ -80,6 +87,7 @@ export default function DashboardPage() {
   const dailyGoal = goalSnapshot(income, business.dailyIncomeTarget);
   const weeklyGoal = goalSnapshot(weekIncome, business.weeklyIncomeTarget);
   const monthlyGoal = goalSnapshot(monthIncome, business.monthlyIncomeTarget);
+  const yearlyGoal = goalSnapshot(yearIncome, business.yearlyIncomeTarget);
   const paceExpected = monthlyPaceExpected(business.monthlyIncomeTarget);
   const aheadOfPace =
     business.monthlyIncomeTarget > 0 && monthIncome >= paceExpected;
@@ -229,7 +237,7 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <GoalProgress
           label="Günlük gelir hedefi"
           current={dailyGoal.current}
@@ -263,6 +271,17 @@ export default function DashboardPage() {
               ? aheadOfPace
                 ? `Tempo üstü · beklenen ${formatMoney(paceExpected)}`
                 : `Tempo altı · beklenen ${formatMoney(paceExpected)}`
+              : undefined
+          }
+          icon={<Trophy className="h-5 w-5" />}
+        />
+        <GoalProgress
+          label="Yıllık gelir hedefi"
+          current={yearlyGoal.current}
+          target={yearlyGoal.target}
+          hint={
+            yearlyGoal.target > 0
+              ? `Kalan ${formatMoney(yearlyGoal.remaining)}`
               : undefined
           }
           icon={<Trophy className="h-5 w-5" />}
@@ -328,7 +347,7 @@ export default function DashboardPage() {
               Tümü
             </Link>
           </CardHeader>
-          <CardContent className="pt-0">
+          <CardContent className="pt-3">
             <DataTable
               columns={columns}
               data={recent}

@@ -22,7 +22,10 @@ export function CardHeader({
 }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("flex items-start justify-between gap-3 px-5 pt-5", className)}
+      className={cn(
+        "flex items-start justify-between gap-3 px-5 pt-5 pb-3",
+        className,
+      )}
       {...props}
     />
   );

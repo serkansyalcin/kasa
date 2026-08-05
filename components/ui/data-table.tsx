@@ -204,7 +204,7 @@ export function DataTable<T>({
   return (
     <div className={cn("w-full", className)}>
       {showToolbar && options ? (
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           {options.search ? (
             <div className="relative w-full sm:max-w-xs">
               <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted" />

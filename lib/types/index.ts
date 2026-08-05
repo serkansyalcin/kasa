@@ -44,4 +44,6 @@ export type BusinessInfo = {
   weeklyIncomeTarget: number;
   /** Aylık gelir hedefi (₺) */
   monthlyIncomeTarget: number;
+  /** Yıllık gelir hedefi (₺) */
+  yearlyIncomeTarget: number;
 };

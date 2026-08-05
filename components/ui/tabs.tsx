@@ -18,7 +18,7 @@ export function Tabs({ items, value, onChange, className }: TabsProps) {
   return (
     <div
       className={cn(
-        "inline-flex gap-1 rounded-xl bg-muted-light p-1",
+        "inline-flex max-w-full flex-wrap gap-1 rounded-xl bg-muted-light p-1",
         className,
       )}
       role="tablist"

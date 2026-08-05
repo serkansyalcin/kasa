@@ -76,6 +76,99 @@ export function startOfMonthISO(): string {
   return toISO(d);
 }
 
+export function startOfYearISO(): string {
+  const d = new Date();
+  d.setMonth(0, 1);
+  return toISO(d);
+}
+
+export type ReportPeriod = "day" | "week" | "month" | "year";
+
+export function periodRange(period: ReportPeriod): { from: string; to: string } {
+  const to = todayISO();
+  if (period === "day") return { from: to, to };
+  if (period === "week") return { from: startOfWeekISO(), to };
+  if (period === "month") return { from: startOfMonthISO(), to };
+  return { from: startOfYearISO(), to };
+}
+
+/** Seçili dönemin bir önceki eşdeğer aralığı */
+export function previousPeriodRange(period: ReportPeriod): {
+  from: string;
+  to: string;
+} {
+  const now = new Date();
+  if (period === "day") {
+    const d = offsetDateISO(-1);
+    return { from: d, to: d };
+  }
+  if (period === "week") {
+    const prevEnd = new Date(`${startOfWeekISO()}T12:00:00`);
+    prevEnd.setDate(prevEnd.getDate() - 1);
+    const prevStart = new Date(prevEnd);
+    prevStart.setDate(prevStart.getDate() - 6);
+    return { from: toISO(prevStart), to: toISO(prevEnd) };
+  }
+  if (period === "month") {
+    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const end = new Date(now.getFullYear(), now.getMonth(), 0);
+    return { from: toISO(start), to: toISO(end) };
+  }
+  const start = new Date(now.getFullYear() - 1, 0, 1);
+  const end = new Date(now.getFullYear() - 1, 11, 31);
+  return { from: toISO(start), to: toISO(end) };
+}
+
+export function daysBetweenInclusive(from: string, to: string): number {
+  const a = new Date(`${from}T12:00:00`).getTime();
+  const b = new Date(`${to}T12:00:00`).getTime();
+  return Math.max(1, Math.round((b - a) / 86400000) + 1);
+}
+
+export function monthlyBarsForYear(
+  transactions: Transaction[],
+  year: number,
+): { key: string; label: string; income: number; expense: number }[] {
+  const labels = [
+    "Oca",
+    "Şub",
+    "Mar",
+    "Nis",
+    "May",
+    "Haz",
+    "Tem",
+    "Ağu",
+    "Eyl",
+    "Eki",
+    "Kas",
+    "Ara",
+  ];
+  return labels.map((label, index) => {
+    const month = String(index + 1).padStart(2, "0");
+    const prefix = `${year}-${month}`;
+    const list = transactions.filter((t) => t.date.startsWith(prefix));
+    return {
+      key: prefix,
+      label,
+      income: sumByType(list, "income"),
+      expense: sumByType(list, "expense"),
+    };
+  });
+}
+
+export function yearlyPaceExpected(yearlyTarget: number): number {
+  if (yearlyTarget <= 0) return 0;
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 1);
+  const dayOfYear =
+    Math.floor((now.getTime() - start.getTime()) / 86400000) + 1;
+  const isLeap =
+    (now.getFullYear() % 4 === 0 && now.getFullYear() % 100 !== 0) ||
+    now.getFullYear() % 400 === 0;
+  const daysInYear = isLeap ? 366 : 365;
+  return (yearlyTarget / daysInYear) * dayOfYear;
+}
+
 export function offsetDateISO(days: number): string {
   const d = new Date();
   d.setDate(d.getDate() + days);

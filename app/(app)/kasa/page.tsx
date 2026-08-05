@@ -211,7 +211,7 @@ export default function CashPage() {
         <CardHeader>
           <CardTitle>Geçmiş oturumlar</CardTitle>
         </CardHeader>
-        <CardContent className="pt-0">
+        <CardContent className="pt-3">
           <DataTable
             columns={columns}
             data={history}

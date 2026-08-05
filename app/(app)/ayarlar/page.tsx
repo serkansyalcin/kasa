@@ -41,6 +41,9 @@ export default function SettingsPage() {
   const [monthlyTarget, setMonthlyTarget] = useState(
     String(business.monthlyIncomeTarget),
   );
+  const [yearlyTarget, setYearlyTarget] = useState(
+    String(business.yearlyIncomeTarget),
+  );
   const [resetOpen, setResetOpen] = useState(false);
 
   useEffect(() => {
@@ -50,6 +53,7 @@ export default function SettingsPage() {
     setDailyTarget(String(business.dailyIncomeTarget));
     setWeeklyTarget(String(business.weeklyIncomeTarget));
     setMonthlyTarget(String(business.monthlyIncomeTarget));
+    setYearlyTarget(String(business.yearlyIncomeTarget));
   }, [business]);
 
   function handleSave(e: FormEvent) {
@@ -58,6 +62,7 @@ export default function SettingsPage() {
     const daily = parseMoney(dailyTarget);
     const weekly = parseMoney(weeklyTarget);
     const monthly = parseMoney(monthlyTarget);
+    const yearly = parseMoney(yearlyTarget);
 
     if (!name.trim()) {
       notify({
@@ -68,7 +73,7 @@ export default function SettingsPage() {
       return;
     }
     if (
-      [opening, daily, weekly, monthly].some(
+      [opening, daily, weekly, monthly, yearly].some(
         (n) => Number.isNaN(n) || n < 0,
       )
     ) {
@@ -88,6 +93,7 @@ export default function SettingsPage() {
       dailyIncomeTarget: daily,
       weeklyIncomeTarget: weekly,
       monthlyIncomeTarget: monthly,
+      yearlyIncomeTarget: yearly,
     });
     notify({
       title: "Ayarlar kaydedildi",
@@ -220,6 +226,20 @@ export default function SettingsPage() {
                   step="100"
                   value={monthlyTarget}
                   onChange={(e) => setMonthlyTarget(e.target.value)}
+                />
+              </FormField>
+              <FormField
+                label="Yıllık hedef (₺)"
+                htmlFor="goal-yearly"
+                hint="Raporlar → Yıl sekmesinde görünür"
+              >
+                <Input
+                  id="goal-yearly"
+                  type="number"
+                  min="0"
+                  step="1000"
+                  value={yearlyTarget}
+                  onChange={(e) => setYearlyTarget(e.target.value)}
                 />
               </FormField>
             </CardContent>

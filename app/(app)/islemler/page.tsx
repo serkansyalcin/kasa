@@ -258,7 +258,7 @@ export default function TransactionsPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-2">
+        <CardContent className="pt-5">
           <DataTable
             columns={columns}
             data={filtered}

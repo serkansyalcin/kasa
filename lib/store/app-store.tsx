@@ -118,6 +118,8 @@ function migrateData(raw: AppData): AppData {
         raw.business?.weeklyIncomeTarget ?? businessInfo.weeklyIncomeTarget,
       monthlyIncomeTarget:
         raw.business?.monthlyIncomeTarget ?? businessInfo.monthlyIncomeTarget,
+      yearlyIncomeTarget:
+        raw.business?.yearlyIncomeTarget ?? businessInfo.yearlyIncomeTarget,
     },
     transactions: (raw.transactions ?? []).map((t) => ({
       ...t,
