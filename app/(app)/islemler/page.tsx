@@ -101,9 +101,24 @@ export default function TransactionsPage() {
       id: "description",
       header: "Açıklama",
       cell: (row) => (
-        <span className="line-clamp-2 max-w-xs">{row.description}</span>
+        <div className="max-w-xs">
+          <span className="line-clamp-2">{row.description}</span>
+          {row.source === "sale" || row.source === "purchase" ? (
+            <Badge variant="success" className="mt-1">
+              {row.source === "sale" ? "Satış fişi" : "Alış fişi"}
+            </Badge>
+          ) : null}
+        </div>
       ),
-      exportValue: (row) => row.description,
+      exportValue: (row) => {
+        const tag =
+          row.source === "sale"
+            ? " [Satış]"
+            : row.source === "purchase"
+              ? " [Alış]"
+              : "";
+        return `${row.description}${tag}`;
+      },
     },
     {
       id: "amount",
@@ -134,31 +149,36 @@ export default function TransactionsPage() {
       className: "text-right",
       excludeFromExport: true,
       excludeFromSearch: true,
-      cell: (row) => (
-        <div className="flex justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="px-2"
-            aria-label="Düzenle"
-            onClick={() => {
-              setEditing(row);
-              setModalOpen(true);
-            }}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="px-2 text-danger hover:bg-danger-soft"
-            aria-label="Sil"
-            onClick={() => setDeleting(row)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      ),
+      cell: (row) => {
+        const linked = row.source === "sale" || row.source === "purchase";
+        return (
+          <div className="flex justify-end gap-1">
+            {!linked ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="px-2"
+                aria-label="Düzenle"
+                onClick={() => {
+                  setEditing(row);
+                  setModalOpen(true);
+                }}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            ) : null}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="px-2 text-danger hover:bg-danger-soft"
+              aria-label="Sil"
+              onClick={() => setDeleting(row)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        );
+      },
     },
   ];
 
@@ -343,7 +363,13 @@ export default function TransactionsPage() {
         open={Boolean(deleting)}
         onClose={() => setDeleting(null)}
         title="İşlemi sil"
-        description="Bu işlem kalıcı olarak silinecek."
+        description={
+          deleting?.source === "sale"
+            ? "Bu işlem bir satış fişine bağlı. Silinirse satış kaydı da kaldırılır."
+            : deleting?.source === "purchase"
+              ? "Bu işlem bir alış fişine bağlı. Silinirse alış kaydı da kaldırılır."
+              : "Bu işlem kalıcı olarak silinecek."
+        }
         confirmLabel="Sil"
         danger
         onConfirm={() => {

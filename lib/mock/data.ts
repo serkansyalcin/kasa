@@ -1,4 +1,12 @@
-import type { BusinessInfo, CashSession, Category, Transaction } from "@/lib/types";
+import type {
+  BusinessInfo,
+  CashSession,
+  Category,
+  Product,
+  Purchase,
+  Sale,
+  Transaction,
+} from "@/lib/types";
 import { todayISO } from "@/lib/utils/format";
 
 const today = todayISO();
@@ -17,12 +25,83 @@ export const seedCategories: Category[] = [
   { id: "cat_satis", name: "Satış", type: "income", color: "#8BBC15" },
   { id: "cat_nakit", name: "Nakit Tahsilat", type: "income", color: "#A2DC18" },
   { id: "cat_diger_gelir", name: "Diğer Gelir", type: "income", color: "#537528" },
+  { id: "cat_alis", name: "Alış / Tedarik", type: "expense", color: "#045131" },
   { id: "cat_malzeme", name: "Malzeme", type: "expense", color: "#045131" },
   { id: "cat_kira", name: "Kira", type: "expense", color: "#537528" },
   { id: "cat_personel", name: "Personel", type: "expense", color: "#8BBC15" },
   { id: "cat_fatura", name: "Fatura", type: "expense", color: "#045131" },
   { id: "cat_diger_gider", name: "Diğer Gider", type: "expense", color: "#537528" },
 ];
+
+export const seedProducts: Product[] = [
+  {
+    id: "prd_kahve",
+    name: "Filtre Kahve",
+    sellPrice: 90,
+    buyPrice: 0,
+    kind: "sell",
+    active: true,
+  },
+  {
+    id: "prd_latte",
+    name: "Latte",
+    sellPrice: 120,
+    buyPrice: 0,
+    kind: "sell",
+    active: true,
+  },
+  {
+    id: "prd_cay",
+    name: "Çay",
+    sellPrice: 40,
+    buyPrice: 0,
+    kind: "sell",
+    active: true,
+  },
+  {
+    id: "prd_su",
+    name: "Su",
+    sellPrice: 25,
+    buyPrice: 8,
+    kind: "both",
+    active: true,
+  },
+  {
+    id: "prd_sandvic",
+    name: "Sandviç",
+    sellPrice: 180,
+    buyPrice: 0,
+    kind: "sell",
+    active: true,
+  },
+  {
+    id: "prd_sut",
+    name: "Süt (L)",
+    sellPrice: 0,
+    buyPrice: 45,
+    kind: "buy",
+    active: true,
+  },
+  {
+    id: "prd_kahvecekirdek",
+    name: "Kahve çekirdeği (kg)",
+    sellPrice: 0,
+    buyPrice: 650,
+    kind: "buy",
+    active: true,
+  },
+  {
+    id: "prd_seker",
+    name: "Şeker (kg)",
+    sellPrice: 0,
+    buyPrice: 55,
+    kind: "buy",
+    active: true,
+  },
+];
+
+export const seedSales: Sale[] = [];
+export const seedPurchases: Purchase[] = [];
 
 export const seedTransactions: Transaction[] = [
   {

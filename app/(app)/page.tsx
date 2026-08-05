@@ -162,6 +162,12 @@ export default function DashboardPage() {
         description="Bugünün kasa özeti ve son hareketler"
         actions={
           <>
+            <Link
+              href="/satis"
+              className="inline-flex h-8 items-center justify-center rounded-xl bg-apple px-3 text-sm font-medium text-forest shadow-sm transition-colors hover:bg-lime"
+            >
+              Hızlı satış
+            </Link>
             <Button
               variant="secondary"
               size="sm"

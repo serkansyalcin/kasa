@@ -8,6 +8,9 @@ import {
   Tags,
   BarChart3,
   Settings,
+  ShoppingBag,
+  PackagePlus,
+  Package,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -16,6 +19,9 @@ import { Button } from "@/components/ui/button";
 
 const nav = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/satis", label: "Satış", icon: ShoppingBag },
+  { href: "/alis", label: "Alış", icon: PackagePlus },
+  { href: "/urunler", label: "Ürünler", icon: Package },
   { href: "/islemler", label: "İşlemler", icon: ArrowLeftRight },
   { href: "/kasa", label: "Kasa", icon: Wallet },
   { href: "/kategoriler", label: "Kategoriler", icon: Tags },
