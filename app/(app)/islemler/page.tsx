@@ -57,6 +57,8 @@ export default function TransactionsPage() {
       id: "date",
       header: "Tarih",
       cell: (row) => formatDate(row.date),
+      exportValue: (row) => formatDate(row.date),
+      sortValue: (row) => row.date,
     },
     {
       id: "type",
@@ -66,11 +68,13 @@ export default function TransactionsPage() {
           {row.type === "income" ? "Gelir" : "Gider"}
         </Badge>
       ),
+      exportValue: (row) => (row.type === "income" ? "Gelir" : "Gider"),
     },
     {
       id: "category",
       header: "Kategori",
       cell: (row) => categoryMap[row.categoryId] ?? "—",
+      exportValue: (row) => categoryMap[row.categoryId] ?? "—",
     },
     {
       id: "description",
@@ -78,6 +82,7 @@ export default function TransactionsPage() {
       cell: (row) => (
         <span className="line-clamp-2 max-w-xs">{row.description}</span>
       ),
+      exportValue: (row) => row.description,
     },
     {
       id: "amount",
@@ -95,6 +100,10 @@ export default function TransactionsPage() {
           {formatMoney(row.amount)}
         </span>
       ),
+      exportValue: (row) =>
+        `${row.type === "income" ? "+" : "-"}${formatMoney(row.amount)}`,
+      sortValue: (row) =>
+        row.type === "income" ? row.amount : -row.amount,
     },
     {
       id: "actions",
@@ -102,6 +111,8 @@ export default function TransactionsPage() {
       hideOnMobile: false,
       mobileLabel: "İşlem",
       className: "text-right",
+      excludeFromExport: true,
+      excludeFromSearch: true,
       cell: (row) => (
         <div className="flex justify-end gap-1">
           <Button
@@ -214,6 +225,11 @@ export default function TransactionsPage() {
             columns={columns}
             data={filtered}
             keyExtractor={(r) => r.id}
+            toolbar={{
+              title: "İşlemler",
+              filename: "islemler",
+              searchPlaceholder: "Açıklama, kategori ara...",
+            }}
             emptyTitle="Filtreye uygun işlem yok"
             emptyDescription="Filtreleri temizleyin veya yeni işlem ekleyin."
             emptyAction={

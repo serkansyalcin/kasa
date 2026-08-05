@@ -50,6 +50,7 @@ export default function CategoriesPage() {
       id: "name",
       header: "Ad",
       cell: (row) => <span className="font-medium">{row.name}</span>,
+      exportValue: (row) => row.name,
     },
     {
       id: "type",
@@ -59,6 +60,7 @@ export default function CategoriesPage() {
           {row.type === "income" ? "Gelir" : "Gider"}
         </Badge>
       ),
+      exportValue: (row) => (row.type === "income" ? "Gelir" : "Gider"),
     },
     {
       id: "usage",
@@ -69,12 +71,16 @@ export default function CategoriesPage() {
         ) : (
           <span className="text-muted">—</span>
         ),
+      exportValue: (row) =>
+        usedIds.has(row.id) ? "İşlemlerde kullanılıyor" : "—",
     },
     {
       id: "actions",
       header: "",
       className: "text-right",
       mobileLabel: "İşlem",
+      excludeFromExport: true,
+      excludeFromSearch: true,
       cell: (row) => (
         <div className="flex justify-end gap-1">
           <Button
@@ -178,6 +184,11 @@ export default function CategoriesPage() {
             columns={columns}
             data={filtered}
             keyExtractor={(r) => r.id}
+            toolbar={{
+              title: "Kategoriler",
+              filename: "kategoriler",
+              searchPlaceholder: "Kategori ara...",
+            }}
             emptyTitle="Kategori yok"
             emptyDescription="Yeni bir kategori ekleyerek başlayın."
             emptyAction={

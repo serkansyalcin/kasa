@@ -14,3 +14,9 @@ export {
   sumByType,
   todayTransactions,
 } from "./stats";
+export {
+  downloadCsv,
+  downloadPdf,
+  normalizeSearch,
+  printTable,
+} from "./table";

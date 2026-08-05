@@ -51,19 +51,26 @@ export default function CashPage() {
       id: "opened",
       header: "Açılış",
       cell: (row) => formatDateTime(row.openedAt),
+      exportValue: (row) => formatDateTime(row.openedAt),
+      sortValue: (row) => row.openedAt,
     },
     {
       id: "closed",
       header: "Kapanış",
       cell: (row) =>
         row.closedAt ? formatDateTime(row.closedAt) : "—",
+      exportValue: (row) =>
+        row.closedAt ? formatDateTime(row.closedAt) : "—",
+      sortValue: (row) => row.closedAt ?? "",
     },
     {
       id: "opening",
-      header: "Açılış",
+      header: "Açılış bakiyesi",
       cell: (row) => (
         <span className="tabular-nums">{formatMoney(row.openingBalance)}</span>
       ),
+      exportValue: (row) => formatMoney(row.openingBalance),
+      sortValue: (row) => row.openingBalance,
     },
     {
       id: "closing",
@@ -73,6 +80,9 @@ export default function CashPage() {
           {row.closingBalance != null ? formatMoney(row.closingBalance) : "—"}
         </span>
       ),
+      exportValue: (row) =>
+        row.closingBalance != null ? formatMoney(row.closingBalance) : "—",
+      sortValue: (row) => row.closingBalance ?? Number.NEGATIVE_INFINITY,
     },
     {
       id: "counted",
@@ -82,6 +92,9 @@ export default function CashPage() {
           {row.countedBalance != null ? formatMoney(row.countedBalance) : "—"}
         </span>
       ),
+      exportValue: (row) =>
+        row.countedBalance != null ? formatMoney(row.countedBalance) : "—",
+      sortValue: (row) => row.countedBalance ?? Number.NEGATIVE_INFINITY,
     },
     {
       id: "diff",
@@ -98,6 +111,11 @@ export default function CashPage() {
           </Badge>
         );
       },
+      exportValue: (row) =>
+        row.difference == null
+          ? "—"
+          : `${row.difference >= 0 ? "+" : ""}${formatMoney(row.difference)}`,
+      sortValue: (row) => row.difference ?? Number.NEGATIVE_INFINITY,
     },
   ];
 
@@ -188,6 +206,11 @@ export default function CashPage() {
             columns={columns}
             data={history}
             keyExtractor={(r) => r.id}
+            toolbar={{
+              title: "Kasa oturumları",
+              filename: "kasa-oturumlari",
+              searchPlaceholder: "Oturum ara...",
+            }}
             emptyTitle="Henüz kapanmış oturum yok"
             emptyDescription="İlk kasa kapanışınız burada listelenir."
           />

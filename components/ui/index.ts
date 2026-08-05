@@ -11,6 +11,7 @@ export {
 export { ConfirmDialog, Modal } from "./modal";
 export { DataTable, type Column } from "./data-table";
 export { EmptyState } from "./empty-state";
+export { ExportMenu } from "./export-menu";
 export { FeedbackHost } from "./feedback";
 export { FormField } from "./form-field";
 export { Input } from "./input";
