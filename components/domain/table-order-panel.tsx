@@ -15,6 +15,7 @@ import type {
 import { docTotal, lineTotal } from "@/lib/types";
 import { formatMoney, uid } from "@/lib/utils/format";
 import { paymentMethodLabels } from "@/lib/utils/labels";
+import { formatStockQty, isLowStock } from "@/lib/utils/stock";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -134,6 +135,17 @@ export function TableOrderPanel({
                   <p className="mt-1 text-sm tabular-nums text-olive">
                     {formatMoney(p.sellPrice)}
                   </p>
+                  {p.trackStock ? (
+                    <p
+                      className={
+                        isLowStock(p)
+                          ? "mt-0.5 text-xs text-danger"
+                          : "mt-0.5 text-xs text-muted"
+                      }
+                    >
+                      Stok {formatStockQty(p.stockQty, p.unit)}
+                    </p>
+                  ) : null}
                 </button>
               ))}
             </div>

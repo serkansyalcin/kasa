@@ -58,6 +58,14 @@ export type Product = {
   buyPrice: number;
   kind: ProductKind;
   active: boolean;
+  /** Stok takibi açık mı (reçetesiz menü için kapatılabilir) */
+  trackStock: boolean;
+  /** Güncel stok miktarı */
+  stockQty: number;
+  /** Bu seviye ve altı = düşük stok uyarısı (0 = uyarı yok) */
+  lowStockAt: number;
+  /** Görünen birim: adet, kg, L… */
+  unit: string;
 };
 
 export type DocLine = {

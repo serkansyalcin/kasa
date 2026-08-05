@@ -40,6 +40,7 @@ import {
   docTotal,
 } from "@/lib/types";
 import { todayISO, uid } from "@/lib/utils/format";
+import { applyStockFromLines, migrateProduct } from "@/lib/utils/stock";
 import { expectedCashBalance } from "@/lib/utils/stats";
 import { AUTH_KEY, DATA_KEY, loadJSON, removeKey, saveJSON } from "./storage";
 
@@ -77,6 +78,10 @@ type ProductInput = {
   buyPrice: number;
   kind: ProductKind;
   active?: boolean;
+  trackStock?: boolean;
+  stockQty?: number;
+  lowStockAt?: number;
+  unit?: string;
 };
 
 type SaleInput = {
@@ -133,6 +138,10 @@ type AppStore = {
   addProduct: (input: ProductInput) => void;
   updateProduct: (id: string, input: ProductInput) => void;
   deleteProduct: (id: string) => void;
+  adjustStock: (
+    productId: string,
+    qty: number,
+  ) => { ok: true; product: Product } | { ok: false; error: string };
   createSale: (
     input: SaleInput,
   ) => { ok: true; sale: Sale } | { ok: false; error: string };
@@ -237,7 +246,9 @@ function migrateData(raw: Partial<AppData> & { business?: BusinessInfo }): AppDa
       yearlyIncomeTarget:
         raw.business?.yearlyIncomeTarget ?? businessInfo.yearlyIncomeTarget,
     },
-    products: raw.products?.length ? raw.products : seedProducts,
+    products: (raw.products?.length ? raw.products : seedProducts).map(
+      migrateProduct,
+    ),
     sales: raw.sales ?? [],
     purchases: raw.purchases ?? [],
     tables: raw.tables?.length ? raw.tables : seedTables,
@@ -340,16 +351,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
         tx?.source === "sale"
           ? prev.sales.find((s) => s.transactionId === id)
           : undefined;
+      const removedPurchase =
+        tx?.source === "purchase"
+          ? prev.purchases.find((p) => p.transactionId === id)
+          : undefined;
+
+      let products = prev.products;
+      if (removedSale) {
+        products = applyStockFromLines(products, removedSale.lines, 1);
+      }
+      if (removedPurchase) {
+        products = applyStockFromLines(products, removedPurchase.lines, -1);
+      }
+
       return {
         ...prev,
+        products,
         transactions: prev.transactions.filter((t) => t.id !== id),
         sales: removedSale
           ? prev.sales.filter((s) => s.id !== removedSale.id)
           : prev.sales,
-        purchases:
-          tx?.source === "purchase"
-            ? prev.purchases.filter((p) => p.transactionId !== id)
-            : prev.purchases,
+        purchases: removedPurchase
+          ? prev.purchases.filter((p) => p.id !== removedPurchase.id)
+          : prev.purchases,
         tableOrders: removedSale
           ? prev.tableOrders.map((o) =>
               o.saleId === removedSale.id
@@ -440,14 +464,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const addProduct = useCallback((input: ProductInput) => {
-    const product: Product = {
+    const product = migrateProduct({
       id: uid("prd"),
       name: input.name.trim(),
       sellPrice: input.sellPrice,
       buyPrice: input.buyPrice,
       kind: input.kind,
       active: input.active ?? true,
-    };
+      trackStock: input.trackStock ?? true,
+      stockQty: input.stockQty ?? 0,
+      lowStockAt: input.lowStockAt ?? 5,
+      unit: input.unit ?? "adet",
+    });
     setData((prev) => ({
       ...prev,
       products: [product, ...prev.products],
@@ -459,14 +487,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ...prev,
       products: prev.products.map((p) =>
         p.id === id
-          ? {
+          ? migrateProduct({
               ...p,
               name: input.name.trim(),
               sellPrice: input.sellPrice,
               buyPrice: input.buyPrice,
               kind: input.kind,
               active: input.active ?? p.active,
-            }
+              trackStock: input.trackStock ?? p.trackStock,
+              stockQty:
+                input.stockQty !== undefined ? input.stockQty : p.stockQty,
+              lowStockAt:
+                input.lowStockAt !== undefined
+                  ? input.lowStockAt
+                  : p.lowStockAt,
+              unit: input.unit ?? p.unit,
+            })
           : p,
       ),
     }));
@@ -477,6 +513,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ...prev,
       products: prev.products.filter((p) => p.id !== id),
     }));
+  }, []);
+
+  const adjustStock = useCallback((productId: string, qty: number) => {
+    if (!Number.isFinite(qty)) {
+      return { ok: false as const, error: "Geçersiz miktar." };
+    }
+    const product = snapshot.data.products.find((p) => p.id === productId);
+    if (!product) {
+      return { ok: false as const, error: "Ürün bulunamadı." };
+    }
+    if (!product.trackStock) {
+      return { ok: false as const, error: "Bu üründe stok takibi kapalı." };
+    }
+    const nextQty = Math.round(qty * 1000) / 1000;
+    const updated: Product = { ...product, stockQty: nextQty };
+    setData((prev) => ({
+      ...prev,
+      products: prev.products.map((p) => (p.id === productId ? updated : p)),
+    }));
+    return { ok: true as const, product: updated };
   }, []);
 
   const createSale = useCallback((input: SaleInput) => {
@@ -528,6 +584,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     setData((prev) => ({
       ...prev,
+      products: applyStockFromLines(prev.products, lines, -1),
       sales: [sale, ...prev.sales],
       transactions: [tx, ...prev.transactions],
     }));
@@ -541,6 +598,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!sale) return prev;
       return {
         ...prev,
+        products: applyStockFromLines(prev.products, sale.lines, 1),
         sales: prev.sales.filter((s) => s.id !== id),
         transactions: prev.transactions.filter(
           (t) => t.id !== sale.transactionId,
@@ -606,6 +664,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     setData((prev) => ({
       ...prev,
+      products: applyStockFromLines(prev.products, lines, 1),
       purchases: [purchase, ...prev.purchases],
       transactions: [tx, ...prev.transactions],
     }));
@@ -619,6 +678,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!purchase) return prev;
       return {
         ...prev,
+        products: applyStockFromLines(prev.products, purchase.lines, -1),
         purchases: prev.purchases.filter((p) => p.id !== id),
         transactions: prev.transactions.filter(
           (t) => t.id !== purchase.transactionId,
@@ -811,6 +871,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       setData((prev) => ({
         ...prev,
+        products: applyStockFromLines(prev.products, lines, -1),
         sales: [sale, ...prev.sales],
         transactions: [tx, ...prev.transactions],
         tableOrders: prev.tableOrders.map((o) =>
@@ -930,6 +991,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addProduct,
       updateProduct,
       deleteProduct,
+      adjustStock,
       createSale,
       deleteSale,
       createPurchase,
@@ -962,6 +1024,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addProduct,
       updateProduct,
       deleteProduct,
+      adjustStock,
       createSale,
       deleteSale,
       createPurchase,

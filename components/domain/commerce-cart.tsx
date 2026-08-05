@@ -9,6 +9,7 @@ import type { DocLine, PaymentMethod, Product } from "@/lib/types";
 import { docTotal, lineTotal } from "@/lib/types";
 import { formatMoney, todayISO, uid } from "@/lib/utils/format";
 import { paymentMethodLabels } from "@/lib/utils/labels";
+import { formatStockQty, isLowStock } from "@/lib/utils/stock";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -161,6 +162,17 @@ export function CommerceCart({
                   <p className="mt-1 text-sm tabular-nums text-olive">
                     {formatMoney(price)}
                   </p>
+                  {mode === "sale" && p.trackStock ? (
+                    <p
+                      className={
+                        isLowStock(p)
+                          ? "mt-0.5 text-xs text-danger"
+                          : "mt-0.5 text-xs text-muted"
+                      }
+                    >
+                      Stok {formatStockQty(p.stockQty, p.unit)}
+                    </p>
+                  ) : null}
                 </button>
               );
             })}
