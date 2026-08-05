@@ -12,6 +12,7 @@ import {
   PackagePlus,
   Package,
   UtensilsCrossed,
+  BookOpen,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -100,8 +101,21 @@ export function AppSidebar({ open = false, onClose }: AppSidebarProps) {
           })}
         </nav>
 
-        <div className="border-t border-cream/10 px-5 py-4 text-xs text-cream/55">
-          MVP · Frontend
+        <div className="border-t border-cream/10 px-3 py-3">
+          <Link
+            href="/ozellikler"
+            onClick={onClose}
+            className={cn(
+              "flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+              pathname.startsWith("/ozellikler")
+                ? "bg-apple text-forest"
+                : "text-cream/75 hover:bg-olive/50 hover:text-cream",
+            )}
+          >
+            <BookOpen className="h-4 w-4 shrink-0" />
+            Özellikler listesi
+          </Link>
+          <p className="mt-1 px-3 text-[11px] text-cream/45">MVP · Frontend</p>
         </div>
       </aside>
     </>
