@@ -18,10 +18,12 @@ import type {
   BusinessInfo,
   CashSession,
   Category,
+  PaymentMethod,
   Transaction,
   TransactionType,
 } from "@/lib/types";
-import { todayISO, uid } from "@/lib/utils/format";
+import { uid } from "@/lib/utils/format";
+import { expectedCashBalance } from "@/lib/utils/stats";
 import { AUTH_KEY, DATA_KEY, loadJSON, removeKey, saveJSON } from "./storage";
 
 type AppData = {
@@ -37,6 +39,7 @@ type TransactionInput = {
   categoryId: string;
   description: string;
   date: string;
+  paymentMethod: PaymentMethod;
 };
 
 type CategoryInput = {
@@ -62,6 +65,10 @@ type AppStore = {
   deleteCategory: (id: string) => void;
   openCash: (openingBalance: number, note?: string) => void;
   closeCash: (countedBalance: number, note?: string) => void;
+  updateBusiness: (patch: Partial<BusinessInfo>) => void;
+  exportBackup: () => string;
+  importBackup: (json: string) => { ok: true } | { ok: false; error: string };
+  resetData: () => void;
 };
 
 const defaultData: AppData = {
@@ -96,14 +103,34 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener);
 }
 
+function migrateData(raw: AppData): AppData {
+  return {
+    ...raw,
+    business: {
+      ...businessInfo,
+      ...raw.business,
+      defaultOpeningBalance:
+        raw.business?.defaultOpeningBalance ??
+        businessInfo.defaultOpeningBalance,
+    },
+    transactions: (raw.transactions ?? []).map((t) => ({
+      ...t,
+      paymentMethod: t.paymentMethod ?? "cash",
+    })),
+    categories: raw.categories ?? seedCategories,
+    cashSessions: raw.cashSessions ?? seedCashSessions,
+  };
+}
+
 function ensureClientInit() {
   if (initialized || typeof window === "undefined") return;
   initialized = true;
   const auth = loadJSON<{ loggedIn: boolean } | null>(AUTH_KEY, null);
+  const loaded = loadJSON<AppData>(DATA_KEY, defaultData);
   snapshot = {
     hydrated: true,
     isAuthenticated: Boolean(auth?.loggedIn),
-    data: loadJSON<AppData>(DATA_KEY, defaultData),
+    data: migrateData(loaded),
   };
 }
 
@@ -220,15 +247,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const open = prev.cashSessions.find((s) => s.status === "open");
       if (!open) return prev;
 
-      const today = todayISO();
-      const dayTx = prev.transactions.filter((t) => t.date === today);
-      const income = dayTx
-        .filter((t) => t.type === "income")
-        .reduce((s, t) => s + t.amount, 0);
-      const expense = dayTx
-        .filter((t) => t.type === "expense")
-        .reduce((s, t) => s + t.amount, 0);
-      const closingBalance = open.openingBalance + income - expense;
+      const closingBalance =
+        expectedCashBalance(open, prev.transactions) ?? open.openingBalance;
       const difference = countedBalance - closingBalance;
 
       return {
@@ -247,6 +267,48 @@ export function AppProvider({ children }: { children: ReactNode }) {
             : s,
         ),
       };
+    });
+  }, []);
+
+  const updateBusiness = useCallback((patch: Partial<BusinessInfo>) => {
+    setData((prev) => ({
+      ...prev,
+      business: { ...prev.business, ...patch },
+    }));
+  }, []);
+
+  const exportBackup = useCallback(() => {
+    return JSON.stringify(
+      {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        data: snapshot.data,
+      },
+      null,
+      2,
+    );
+  }, []);
+
+  const importBackup = useCallback((json: string) => {
+    try {
+      const parsed = JSON.parse(json) as { data?: AppData } & AppData;
+      const raw = parsed.data ?? (parsed as AppData);
+      if (!raw.transactions || !raw.categories || !raw.business) {
+        return { ok: false as const, error: "Geçersiz yedek dosyası." };
+      }
+      setData(migrateData(raw));
+      return { ok: true as const };
+    } catch {
+      return { ok: false as const, error: "JSON okunamadı." };
+    }
+  }, []);
+
+  const resetData = useCallback(() => {
+    setData({
+      categories: seedCategories,
+      transactions: seedTransactions,
+      cashSessions: seedCashSessions,
+      business: { ...businessInfo },
     });
   }, []);
 
@@ -274,6 +336,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       deleteCategory,
       openCash,
       closeCash,
+      updateBusiness,
+      exportBackup,
+      importBackup,
+      resetData,
     }),
     [
       state,
@@ -288,6 +354,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       deleteCategory,
       openCash,
       closeCash,
+      updateBusiness,
+      exportBackup,
+      importBackup,
+      resetData,
     ],
   );
 

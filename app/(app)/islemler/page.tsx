@@ -12,8 +12,9 @@ import { ConfirmDialog, Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
 import { useAppStore } from "@/lib/store/app-store";
 import { useFeedback } from "@/lib/store/feedback-store";
-import type { Transaction, TransactionType } from "@/lib/types";
+import type { PaymentMethod, Transaction, TransactionType } from "@/lib/types";
 import { formatDate, formatMoney } from "@/lib/utils/format";
+import { paymentMethodLabel, paymentMethodLabels } from "@/lib/utils/labels";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -28,6 +29,9 @@ export default function TransactionsPage() {
   const { notify } = useFeedback();
 
   const [typeFilter, setTypeFilter] = useState<"all" | TransactionType>("all");
+  const [paymentFilter, setPaymentFilter] = useState<"all" | PaymentMethod>(
+    "all",
+  );
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
@@ -45,12 +49,17 @@ export default function TransactionsPage() {
     return [...transactions]
       .filter((t) => (typeFilter === "all" ? true : t.type === typeFilter))
       .filter((t) =>
+        paymentFilter === "all"
+          ? true
+          : (t.paymentMethod ?? "cash") === paymentFilter,
+      )
+      .filter((t) =>
         categoryFilter === "all" ? true : t.categoryId === categoryFilter,
       )
       .filter((t) => (from ? t.date >= from : true))
       .filter((t) => (to ? t.date <= to : true))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  }, [transactions, typeFilter, categoryFilter, from, to]);
+  }, [transactions, typeFilter, paymentFilter, categoryFilter, from, to]);
 
   const columns: Column<Transaction>[] = [
     {
@@ -69,6 +78,16 @@ export default function TransactionsPage() {
         </Badge>
       ),
       exportValue: (row) => (row.type === "income" ? "Gelir" : "Gider"),
+    },
+    {
+      id: "payment",
+      header: "Ödeme",
+      cell: (row) => (
+        <Badge variant="neutral">
+          {paymentMethodLabel(row.paymentMethod)}
+        </Badge>
+      ),
+      exportValue: (row) => paymentMethodLabel(row.paymentMethod),
     },
     {
       id: "category",
@@ -176,7 +195,7 @@ export default function TransactionsPage() {
       />
 
       <Card className="mb-4">
-        <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <CardContent className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <FormField label="Tür">
             <Select
               value={typeFilter}
@@ -187,6 +206,23 @@ export default function TransactionsPage() {
               <option value="all">Tümü</option>
               <option value="income">Gelir</option>
               <option value="expense">Gider</option>
+            </Select>
+          </FormField>
+          <FormField label="Ödeme">
+            <Select
+              value={paymentFilter}
+              onChange={(e) =>
+                setPaymentFilter(e.target.value as "all" | PaymentMethod)
+              }
+            >
+              <option value="all">Tümü</option>
+              {(Object.keys(paymentMethodLabels) as PaymentMethod[]).map(
+                (key) => (
+                  <option key={key} value={key}>
+                    {paymentMethodLabels[key]}
+                  </option>
+                ),
+              )}
             </Select>
           </FormField>
           <FormField label="Kategori">

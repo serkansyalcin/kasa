@@ -6,6 +6,7 @@ const today = todayISO();
 export const businessInfo: BusinessInfo = {
   name: "Yeşil Bahçe Cafe",
   email: "demo@kasatakip.com",
+  defaultOpeningBalance: 1500,
 };
 
 export const seedCategories: Category[] = [
@@ -28,6 +29,7 @@ export const seedTransactions: Transaction[] = [
     description: "Sabah satışları",
     date: today,
     createdAt: `${today}T09:15:00`,
+    paymentMethod: "cash",
   },
   {
     id: "tx_2",
@@ -37,6 +39,7 @@ export const seedTransactions: Transaction[] = [
     description: "Öğle satışları",
     date: today,
     createdAt: `${today}T13:40:00`,
+    paymentMethod: "card",
   },
   {
     id: "tx_3",
@@ -46,6 +49,7 @@ export const seedTransactions: Transaction[] = [
     description: "Süt ve kahve siparişi",
     date: today,
     createdAt: `${today}T10:05:00`,
+    paymentMethod: "cash",
   },
   {
     id: "tx_4",
@@ -55,6 +59,7 @@ export const seedTransactions: Transaction[] = [
     description: "Temizlik malzemesi",
     date: today,
     createdAt: `${today}T11:20:00`,
+    paymentMethod: "cash",
   },
   {
     id: "tx_5",
@@ -64,6 +69,7 @@ export const seedTransactions: Transaction[] = [
     description: "Akşam satışları",
     date: today,
     createdAt: `${today}T18:30:00`,
+    paymentMethod: "card",
   },
   {
     id: "tx_6",
@@ -73,6 +79,7 @@ export const seedTransactions: Transaction[] = [
     description: "Günlük satış",
     date: offsetDate(-1),
     createdAt: `${offsetDate(-1)}T20:00:00`,
+    paymentMethod: "cash",
   },
   {
     id: "tx_7",
@@ -82,6 +89,7 @@ export const seedTransactions: Transaction[] = [
     description: "Pastane malzemesi",
     date: offsetDate(-1),
     createdAt: `${offsetDate(-1)}T14:00:00`,
+    paymentMethod: "transfer",
   },
   {
     id: "tx_8",
@@ -91,6 +99,7 @@ export const seedTransactions: Transaction[] = [
     description: "Aylık kira",
     date: offsetDate(-3),
     createdAt: `${offsetDate(-3)}T09:00:00`,
+    paymentMethod: "transfer",
   },
   {
     id: "tx_9",
@@ -100,6 +109,7 @@ export const seedTransactions: Transaction[] = [
     description: "Hafta sonu satış",
     date: offsetDate(-2),
     createdAt: `${offsetDate(-2)}T21:00:00`,
+    paymentMethod: "card",
   },
   {
     id: "tx_10",
@@ -109,6 +119,7 @@ export const seedTransactions: Transaction[] = [
     description: "Haftalık avans",
     date: offsetDate(-4),
     createdAt: `${offsetDate(-4)}T17:00:00`,
+    paymentMethod: "cash",
   },
 ];
 

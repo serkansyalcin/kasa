@@ -5,9 +5,15 @@ import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { Category, Transaction, TransactionType } from "@/lib/types";
+import type {
+  Category,
+  PaymentMethod,
+  Transaction,
+  TransactionType,
+} from "@/lib/types";
+import { paymentMethodLabels } from "@/lib/utils/labels";
 import { todayISO } from "@/lib/utils/format";
-import { FormEvent, useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 
 export type TransactionFormValues = {
   type: TransactionType;
@@ -15,6 +21,7 @@ export type TransactionFormValues = {
   categoryId: string;
   description: string;
   date: string;
+  paymentMethod: PaymentMethod;
 };
 
 type TransactionFormProps = {
@@ -41,6 +48,9 @@ export function TransactionForm({
   const [categoryId, setCategoryId] = useState(initial?.categoryId ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [date, setDate] = useState(initial?.date ?? todayISO());
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
+    initial?.paymentMethod ?? "cash",
+  );
   const [error, setError] = useState("");
 
   const filteredCategories = useMemo(
@@ -70,23 +80,44 @@ export function TransactionForm({
       categoryId: resolvedCategoryId,
       description: description.trim() || "—",
       date,
+      paymentMethod,
     });
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <FormField label="Tür">
-        <Select
-          value={type}
-          onChange={(e) => {
-            setType(e.target.value as TransactionType);
-            setCategoryId("");
-          }}
-        >
-          <option value="income">Gelir</option>
-          <option value="expense">Gider</option>
-        </Select>
-      </FormField>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <FormField label="Tür">
+          <Select
+            value={type}
+            onChange={(e) => {
+              setType(e.target.value as TransactionType);
+              setCategoryId("");
+            }}
+          >
+            <option value="income">Gelir</option>
+            <option value="expense">Gider</option>
+          </Select>
+        </FormField>
+
+        <FormField label="Ödeme yöntemi" htmlFor="payment">
+          <Select
+            id="payment"
+            value={paymentMethod}
+            onChange={(e) =>
+              setPaymentMethod(e.target.value as PaymentMethod)
+            }
+          >
+            {(Object.keys(paymentMethodLabels) as PaymentMethod[]).map(
+              (key) => (
+                <option key={key} value={key}>
+                  {paymentMethodLabels[key]}
+                </option>
+              ),
+            )}
+          </Select>
+        </FormField>
+      </div>
 
       <FormField label="Tutar (₺)" htmlFor="amount" error={error}>
         <Input

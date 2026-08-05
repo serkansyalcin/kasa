@@ -9,11 +9,14 @@ export {
 export {
   expectedCashBalance,
   filterByDateRange,
+  paymentBreakdown,
   startOfMonthISO,
   startOfWeekISO,
+  sumByPayment,
   sumByType,
   todayTransactions,
 } from "./stats";
+export { paymentMethodLabel, paymentMethodLabels } from "./labels";
 export {
   downloadCsv,
   downloadPdf,

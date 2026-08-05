@@ -7,6 +7,7 @@ import {
   Wallet,
   Tags,
   BarChart3,
+  Settings,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -19,6 +20,7 @@ const nav = [
   { href: "/kasa", label: "Kasa", icon: Wallet },
   { href: "/kategoriler", label: "Kategoriler", icon: Tags },
   { href: "/raporlar", label: "Raporlar", icon: BarChart3 },
+  { href: "/ayarlar", label: "Ayarlar", icon: Settings },
 ];
 
 type AppSidebarProps = {

@@ -6,8 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs } from "@/components/ui/tabs";
 import { useAppStore } from "@/lib/store/app-store";
 import { formatMoney, todayISO } from "@/lib/utils/format";
+import { paymentMethodLabels } from "@/lib/utils/labels";
 import {
   filterByDateRange,
+  paymentBreakdown,
   startOfMonthISO,
   startOfWeekISO,
   sumByType,
@@ -36,6 +38,7 @@ export default function ReportsPage() {
   const income = sumByType(filtered, "income");
   const expense = sumByType(filtered, "expense");
   const net = income - expense;
+  const payments = useMemo(() => paymentBreakdown(filtered), [filtered]);
 
   const byCategory = useMemo(() => {
     const map = new Map<string, number>();
@@ -213,6 +216,35 @@ export default function ReportsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle>Ödeme yöntemi özeti</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="grid gap-3 sm:grid-cols-3">
+            {payments.map((p) => (
+              <div
+                key={p.method}
+                className="rounded-xl border border-border bg-cream/40 px-4 py-3"
+              >
+                <p className="text-sm font-medium text-forest">
+                  {paymentMethodLabels[p.method]}
+                </p>
+                <p className="mt-2 text-xs text-muted">
+                  Gelir {formatMoney(p.income)}
+                </p>
+                <p className="text-xs text-muted">
+                  Gider {formatMoney(p.expense)}
+                </p>
+                <p className="mt-1 text-sm font-semibold tabular-nums text-forest">
+                  Net {formatMoney(p.net)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

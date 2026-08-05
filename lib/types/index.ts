@@ -1,5 +1,7 @@
 export type TransactionType = "income" | "expense";
 
+export type PaymentMethod = "cash" | "card" | "transfer";
+
 export type Category = {
   id: string;
   name: string;
@@ -15,6 +17,7 @@ export type Transaction = {
   description: string;
   date: string; // ISO date YYYY-MM-DD
   createdAt: string; // ISO datetime
+  paymentMethod: PaymentMethod;
 };
 
 export type CashSessionStatus = "open" | "closed";
@@ -34,4 +37,5 @@ export type CashSession = {
 export type BusinessInfo = {
   name: string;
   email: string;
+  defaultOpeningBalance: number;
 };

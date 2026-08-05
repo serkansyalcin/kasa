@@ -23,6 +23,7 @@ export default function CashPage() {
     openSession,
     cashSessions,
     transactions,
+    business,
     openCash,
     closeCash,
   } = useAppStore();
@@ -30,7 +31,9 @@ export default function CashPage() {
 
   const [openModal, setOpenModal] = useState(false);
   const [closeModal, setCloseModal] = useState(false);
-  const [openingBalance, setOpeningBalance] = useState("1500");
+  const [openingBalance, setOpeningBalance] = useState(
+    String(business.defaultOpeningBalance),
+  );
   const [openNote, setOpenNote] = useState("");
   const [counted, setCounted] = useState("");
   const [closeNote, setCloseNote] = useState("");
@@ -167,7 +170,14 @@ export default function CashPage() {
           openSession ? (
             <Button onClick={() => setCloseModal(true)}>Kasayı kapat</Button>
           ) : (
-            <Button onClick={() => setOpenModal(true)}>Kasayı aç</Button>
+            <Button
+              onClick={() => {
+                setOpeningBalance(String(business.defaultOpeningBalance));
+                setOpenModal(true);
+              }}
+            >
+              Kasayı aç
+            </Button>
           )
         }
       />
@@ -272,7 +282,7 @@ export default function CashPage() {
         title="Kasayı kapat"
         description={
           expected != null
-            ? `Beklenen bakiye: ${formatMoney(expected)}`
+            ? `Beklenen nakit (kart/havale hariç): ${formatMoney(expected)}`
             : undefined
         }
       >

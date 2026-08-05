@@ -4,6 +4,7 @@ import { CashSessionCard } from "@/components/domain/cash-session-card";
 import { StatCard } from "@/components/domain/stat-card";
 import { TransactionForm } from "@/components/domain/transaction-form";
 import { PageHeader } from "@/components/layout/page-header";
+import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,8 +14,10 @@ import { useAppStore } from "@/lib/store/app-store";
 import { useFeedback } from "@/lib/store/feedback-store";
 import type { Transaction, TransactionType } from "@/lib/types";
 import { formatDate, formatMoney } from "@/lib/utils/format";
+import { paymentMethodLabels } from "@/lib/utils/labels";
 import {
   expectedCashBalance,
+  paymentBreakdown,
   sumByType,
   todayTransactions,
 } from "@/lib/utils/stats";
@@ -47,6 +50,7 @@ export default function DashboardPage() {
   const expense = sumByType(todayTx, "expense");
   const net = income - expense;
   const expected = expectedCashBalance(openSession, transactions);
+  const payments = useMemo(() => paymentBreakdown(todayTx), [todayTx]);
 
   const recent = useMemo(
     () =>
@@ -137,6 +141,15 @@ export default function DashboardPage() {
         }
       />
 
+      {!openSession ? (
+        <Alert variant="warning" title="Kasa kapalı" className="mb-4">
+          Bugünkü nakit sayımı için önce kasayı açın.{" "}
+          <Link href="/kasa" className="font-medium underline">
+            Kasaya git
+          </Link>
+        </Alert>
+      ) : null}
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Bugünkü gelir"
@@ -161,7 +174,7 @@ export default function DashboardPage() {
           value={openSession ? "Açık" : "Kapalı"}
           hint={
             expected != null
-              ? `Beklenen: ${formatMoney(expected)}`
+              ? `Nakit beklenen: ${formatMoney(expected)}`
               : "Kasa sayfasından açın"
           }
           icon={<Wallet className="h-5 w-5" />}
@@ -169,7 +182,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        <div className="lg:col-span-1">
+        <div className="space-y-4 lg:col-span-1">
           {openSession ? (
             <CashSessionCard
               session={openSession}
@@ -191,6 +204,30 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           )}
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Ödeme kırılımı</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 pt-0">
+              {payments.map((p) => (
+                <div
+                  key={p.method}
+                  className="flex items-center justify-between text-sm"
+                >
+                  <span className="text-muted">
+                    {paymentMethodLabels[p.method]}
+                  </span>
+                  <span className="tabular-nums font-medium text-forest">
+                    {formatMoney(p.income - p.expense)}
+                  </span>
+                </div>
+              ))}
+              <p className="text-xs text-muted">
+                Beklenen kasa bakiyesi yalnızca nakit hareketleri sayar.
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         <Card className="lg:col-span-2">
