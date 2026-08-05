@@ -14,6 +14,7 @@ import { Modal } from "@/components/ui/modal";
 import { useAppStore } from "@/lib/store/app-store";
 import { useFeedback } from "@/lib/store/feedback-store";
 import type { Transaction, TransactionType } from "@/lib/types";
+import { docTotal } from "@/lib/types";
 import { formatDate, formatMoney, todayISO } from "@/lib/utils/format";
 import { paymentMethodLabels } from "@/lib/utils/labels";
 import {
@@ -37,6 +38,7 @@ import {
   Scale,
   Target,
   Trophy,
+  UtensilsCrossed,
   Wallet,
 } from "lucide-react";
 import Link from "next/link";
@@ -48,6 +50,7 @@ export default function DashboardPage() {
     categories,
     openSession,
     business,
+    tableOrders,
     addTransaction,
   } = useAppStore();
   const { notify } = useFeedback();
@@ -83,6 +86,14 @@ export default function DashboardPage() {
 
   const expected = expectedCashBalance(openSession, transactions);
   const payments = useMemo(() => paymentBreakdown(todayTx), [todayTx]);
+
+  const openTables = useMemo(() => {
+    const open = tableOrders.filter((o) => o.status === "open");
+    return {
+      count: open.length,
+      total: open.reduce((s, o) => s + docTotal(o.lines), 0),
+    };
+  }, [tableOrders]);
 
   const dailyGoal = goalSnapshot(income, business.dailyIncomeTarget);
   const weeklyGoal = goalSnapshot(weekIncome, business.weeklyIncomeTarget);
@@ -163,6 +174,12 @@ export default function DashboardPage() {
         actions={
           <>
             <Link
+              href="/masalar"
+              className="inline-flex h-8 items-center justify-center rounded-xl border border-border bg-surface px-3 text-sm font-medium text-olive hover:border-apple hover:text-forest"
+            >
+              Masalar
+            </Link>
+            <Link
               href="/satis"
               className="inline-flex h-8 items-center justify-center rounded-xl bg-apple px-3 text-sm font-medium text-forest shadow-sm transition-colors hover:bg-lime"
             >
@@ -207,7 +224,7 @@ export default function DashboardPage() {
         ) : null}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard
           label="Bugünkü gelir"
           value={formatMoney(income)}
@@ -230,6 +247,16 @@ export default function DashboardPage() {
           value={formatMoney(net)}
           icon={<Scale className="h-5 w-5" />}
           trend={net >= 0 ? "up" : "down"}
+        />
+        <StatCard
+          label="Açık masa"
+          value={String(openTables.count)}
+          hint={
+            openTables.count > 0
+              ? `Adisyon: ${formatMoney(openTables.total)}`
+              : "Tüm masalar boş"
+          }
+          icon={<UtensilsCrossed className="h-5 w-5" />}
         />
         <StatCard
           label="Kasa durumu"

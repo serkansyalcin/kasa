@@ -77,6 +77,30 @@ export type Sale = {
   total: number;
   transactionId: string;
   createdAt: string;
+  tableId?: string;
+  tableName?: string;
+};
+
+export type DiningTable = {
+  id: string;
+  name: string;
+  capacity: number;
+  sortOrder: number;
+  active: boolean;
+};
+
+export type TableOrderStatus = "open" | "paid" | "cancelled";
+
+export type TableOrder = {
+  id: string;
+  tableId: string;
+  status: TableOrderStatus;
+  lines: DocLine[];
+  note?: string;
+  guestCount?: number;
+  openedAt: string;
+  closedAt?: string;
+  saleId?: string;
 };
 
 export type Purchase = {

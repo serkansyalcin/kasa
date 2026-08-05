@@ -57,6 +57,17 @@ export default function SalesPage() {
         row.lines.map((l) => `${l.qty}× ${l.name}`).join("; "),
     },
     {
+      id: "table",
+      header: "Masa",
+      cell: (row) =>
+        row.tableName ? (
+          <Badge variant="success">{row.tableName}</Badge>
+        ) : (
+          <span className="text-xs text-muted">Tezgâh</span>
+        ),
+      exportValue: (row) => row.tableName ?? "Tezgâh",
+    },
+    {
       id: "payment",
       header: "Ödeme",
       cell: (row) => (
@@ -113,14 +124,22 @@ export default function SalesPage() {
     <div>
       <PageHeader
         title="Satış"
-        description="Ürünler kataloğundan seçin — kasa işlemi otomatik oluşur"
+        description="Tezgâh / paket satışı — masa adisyonu için Masalar sayfasını kullanın"
         actions={
-          <Link
-            href="/urunler"
-            className="inline-flex h-8 items-center rounded-xl border border-border bg-surface px-3 text-sm font-medium text-olive hover:border-apple hover:text-forest"
-          >
-            Ürünler
-          </Link>
+          <>
+            <Link
+              href="/masalar"
+              className="inline-flex h-8 items-center rounded-xl border border-border bg-surface px-3 text-sm font-medium text-olive hover:border-apple hover:text-forest"
+            >
+              Masalar
+            </Link>
+            <Link
+              href="/urunler"
+              className="inline-flex h-8 items-center rounded-xl border border-border bg-surface px-3 text-sm font-medium text-olive hover:border-apple hover:text-forest"
+            >
+              Ürünler
+            </Link>
+          </>
         }
       />
 

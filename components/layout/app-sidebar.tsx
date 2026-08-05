@@ -11,6 +11,7 @@ import {
   ShoppingBag,
   PackagePlus,
   Package,
+  UtensilsCrossed,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -20,6 +21,7 @@ import { Button } from "@/components/ui/button";
 const nav = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/satis", label: "Satış", icon: ShoppingBag },
+  { href: "/masalar", label: "Masalar", icon: UtensilsCrossed },
   { href: "/alis", label: "Alış", icon: PackagePlus },
   { href: "/islemler", label: "İşlemler", icon: ArrowLeftRight },
   { href: "/kasa", label: "Kasa", icon: Wallet },

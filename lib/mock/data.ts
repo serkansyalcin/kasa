@@ -2,9 +2,11 @@ import type {
   BusinessInfo,
   CashSession,
   Category,
+  DiningTable,
   Product,
   Purchase,
   Sale,
+  TableOrder,
   Transaction,
 } from "@/lib/types";
 import { todayISO } from "@/lib/utils/format";
@@ -102,6 +104,19 @@ export const seedProducts: Product[] = [
 
 export const seedSales: Sale[] = [];
 export const seedPurchases: Purchase[] = [];
+
+export const seedTables: DiningTable[] = [
+  { id: "tbl_1", name: "Masa 1", capacity: 2, sortOrder: 1, active: true },
+  { id: "tbl_2", name: "Masa 2", capacity: 2, sortOrder: 2, active: true },
+  { id: "tbl_3", name: "Masa 3", capacity: 4, sortOrder: 3, active: true },
+  { id: "tbl_4", name: "Masa 4", capacity: 4, sortOrder: 4, active: true },
+  { id: "tbl_5", name: "Masa 5", capacity: 4, sortOrder: 5, active: true },
+  { id: "tbl_6", name: "Masa 6", capacity: 4, sortOrder: 6, active: true },
+  { id: "tbl_7", name: "Masa 7", capacity: 6, sortOrder: 7, active: true },
+  { id: "tbl_8", name: "Masa 8", capacity: 6, sortOrder: 8, active: true },
+];
+
+export const seedTableOrders: TableOrder[] = [];
 
 export const seedTransactions: Transaction[] = [
   {
